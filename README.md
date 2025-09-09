@@ -69,6 +69,31 @@ HMACSHA256(
 
 ---
 
+## 🔹 Why should we use JWT as compared to other methods?
+- Let's talk about the benefits of JSON Web Tokens (JWT) when compared to **Simple Web Tokens (SWT)** and **Security Assertion Markup Language Tokens (SAML)**.
+- As JSON is less verbose than XML, when it is encoded, its size is also smaller, making JWT more compact than SAML. This makes JWT a good choice to be passed in HTML and HTTP environments.
+- Security-wise, SWT can only be symmetrically signed by a shared secret using the HMAC algorithm. However, JWT and SAML tokens can use a public/private key pair in the form of an X.509 certificate for signing. Signing XML with an XML Digital Signature without introducing obscure security holes is very difficult compared to the simplicity of signing a JSON.
+- JSON parsers are common in most programming languages because they map directly to objects. Conversely, XML doesn't have a natural document-to-object mapping. This makes it easier to work with JWT than SAML assertions.
+- Regarding usage, JWT is used at the Internet scale. This highlights the ease of client-side processing of the JSON Web token on multiple platforms, especially mobile.
+
+## 🔹 What is the difference between validating and verifying a JWT?
+- Validation ensures the token is well-formed and contains enforceable claims. JWT validation generally refers to checking the structure, format, and content of the JWT:
+Structure: Ensuring the token has the standard three parts (header, payload, signature) separated by dots.
+Format: Verifying that each part is correctly encoded (Base64URL) and that the payload contains expected claims.
+Content: Checking if the claims within the payload are correct, such as expiration time (exp), issued at (iat), not before (nbf), among others, to ensure the token isn't expired, isn't used before its time, etc.
+
+- Verification ensures the token is genuine and unmodified. JWT verification involves confirming the authenticity and integrity of the token:
+Signature Verification: This is the primary aspect of verification where the signature part of the JWT is checked against the header and payload. This is done using the algorithm specified in the header (like HMAC, RSA, or ECDSA) with a secret key or public key. If the signature doesn't match what's expected, the token might have been tampered with or is not from a trusted source.
+Issuer Verification: Checking if the iss claim matches an expected issuer.
+Audience Check: Ensuring the aud claim matches the expected audience.
+In practical terms:
+
+## 🔹 Explain Decoding and Encoding of JWT?
+
+- Encoding a JWT involves transforming the header and payload into a compact, URL-safe format. The header, which states the signing algorithm and token type, and the payload, which includes claims like subject, expiration, and issue time, are both converted to JSON then Base64URL encoded. These encoded parts are then concatenated with a dot, after which a signature is generated using the algorithm specified in the header with a secret or private key. This signature is also Base64URL encoded, resulting in the final JWT string that represents the token in a format suitable for transmission or storage.
+
+- Decoding a JWT reverses this process by converting the Base64URL encoded header and payload back into JSON, allowing anyone to read these parts without needing a key. However, "decoding" in this context often extends to include verification of the token's signature. This verification step involves re-signing the decoded header and payload with the same algorithm and key used initially, then comparing this new signature with the one included in the JWT. If they match, it confirms the token's integrity and authenticity, ensuring it hasn't been tampered with since issuance.
+
 ## 🔹 Advantages & Disadvantages
 
 **Advantages**
