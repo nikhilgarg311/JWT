@@ -94,6 +94,57 @@ In practical terms:
 
 - Decoding a JWT reverses this process by converting the Base64URL encoded header and payload back into JSON, allowing anyone to read these parts without needing a key. However, "decoding" in this context often extends to include verification of the token's signature. This verification step involves re-signing the decoded header and payload with the same algorithm and key used initially, then comparing this new signature with the one included in the JWT. If they match, it confirms the token's integrity and authenticity, ensuring it hasn't been tampered with since issuance.
 
+## 🔹 Explain all types of claims in payload of JWT?
+- **Registered claims** — what they are and the common ones
+These are defined in RFC 7519; they provide interoperable, well-understood semantics:
+
+iss (Issuer) — string: who issued the token (URI or identifier).
+
+sub (Subject) — string: principal (usually user id) the token refers to.
+
+aud (Audience) — string or array of strings: intended recipients (one or more). Must be checked by the receiver.
+
+exp (Expiration Time) — NumericDate: time after which the token MUST NOT be accepted. (seconds since Unix epoch).
+
+nbf (Not Before) — NumericDate: token must not be accepted before this time.
+
+iat (Issued At) — NumericDate: time when the token was issued.
+
+jti (JWT ID) — string: unique id for the token (useful for revocation/blacklist).
+
+Notes:
+
+NumericDate is in seconds since epoch (so in JavaScript divide Date.now() by 1000).
+
+aud may be a single string or an array of strings.
+
+Registered claims are recommended for interoperability — e.g., always check exp and (if present) nbf.
+
+- **Public claims** — what they mean and how to avoid collisions
+
+Public claims are names you choose that are intended to be commonly known and used across systems (for example: name, email, scope, role).
+
+Collision avoidance:
+
+Register the claim name in the IANA JSON Web Token Claims registry (so others know the meaning), or
+
+Use a URI as the claim name to create a collision-resistant namespace, e.g.
+"https://acme.example.com/claims/role": "admin".
+(That URI need not be dereferenceable; it’s just a namespace.)
+
+“Public” here does not mean the value is publicly visible — a JWT payload is base64url-encoded but not encrypted. If the data is sensitive, encrypt (JWE) or avoid putting it in the token.
+
+- **Private claims** — when and how to use
+
+Private claims are custom fields agreed on by specific parties (client + server). Example: company_id, account_tier.
+
+Because they’re not registered, name collisions can happen if two parties independently choose the same key for different meanings. Use namespacing (URI or company prefix) to reduce risk.
+
+Private claims are fine for internal metadata, but:
+
+avoid putting secret PII in plain JWTs unless the token is encrypted (JWE).
+
+prefer storing large or frequently-changing data on the server and keep the JWT small (only an identifier).
 ## 🔹 Advantages & Disadvantages
 
 **Advantages**
