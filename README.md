@@ -94,6 +94,39 @@ In practical terms:
 
 - Decoding a JWT reverses this process by converting the Base64URL encoded header and payload back into JSON, allowing anyone to read these parts without needing a key. However, "decoding" in this context often extends to include verification of the token's signature. This verification step involves re-signing the decoded header and payload with the same algorithm and key used initially, then comparing this new signature with the one included in the JWT. If they match, it confirms the token's integrity and authenticity, ensuring it hasn't been tampered with since issuance.
 
+# Refresh Tokens Explained
+
+**Why do we need refresh tokens?**
+- **Access tokens (JWTs)** are short-lived (e.g., 5–15 minutes).  
+  - ✅ Good: limits damage if stolen.  
+  - ❌ Bad: user would need to log in very often.  
+
+- **Refresh tokens** solve this by letting the client get a *new* access token without re-authentication.
+
+---
+
+**How refresh tokens work**
+1. User logs in → server issues:
+   - **Access token** (short-lived JWT, used for APIs).  
+   - **Refresh token** (long-lived, secret, used to get new access tokens).  
+
+2. Client stores them:
+   - Access token → sent with each API request.  
+   - Refresh token → kept securely (cookie or secure storage).  
+
+3. When access token expires:
+   - Client sends refresh token to server.  
+   - Server verifies → issues a new access token (and often a new refresh token).  
+
+---
+
+**Characteristics**
+- Longer lifetime than access tokens.  
+- Must be stored securely (if stolen, attacker can mint tokens).  
+- Often tracked server-side for revocation.  
+- Can be **rotating** (new one issued each time to prevent replay).
+
+
 ## 🔹 Explain all types of claims in payload of JWT?
 - **Registered claims** — what they are and the common ones
 These are defined in RFC 7519; they provide interoperable, well-understood semantics:
