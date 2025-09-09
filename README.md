@@ -200,8 +200,41 @@ function authenticateToken(req, res, next) {
 - Signature = `HMACSHA256(base64urlEncode(header) + "." + base64urlEncode(payload), secret)`
 
 ### 4. What is the difference between JWT and session-based authentication?
-- Session-based: server stores session → stateful.  
-- JWT: token is stateless, scalable.
+- How session-based authentication works
+  Flow:
+    - User logs in with credentials.
+    - Server creates a session (an object in server memory or a database) containing user info.
+    - Server sets a session ID in a cookie (Set-Cookie).
+    - On each request, browser sends the cookie.
+    - Server looks up the session ID in its store → retrieves user data → authorizes.
+  Characteristics:
+    - State is stored on the server (session store: memory, Redis, DB).
+    - Token is usually just a random session ID (no data inside).
+    - Revoking a session is easy → just delete it from the store.
+    - Works well when you have a single server or shared session store.
+
+- How JWT-based authentication works
+  Flow:
+    - User logs in with credentials.
+    - Server issues a JWT (signed JSON payload: user id, roles, exp, etc.).
+    - JWT is sent to the client (often stored in Authorization: Bearer <token> header).
+    - On each request, client sends the JWT.
+    - Server verifies the signature and reads claims directly → no lookup needed.
+  Characteristics:
+    - State is stored in the token itself (stateless).
+    - Server doesn’t need to store per-user session data.
+    - Token revocation is harder (since the server doesn’t track them).
+    - Great for distributed / microservice architectures, where you don’t want to share a session store.
+
+- Use session-based auth when:
+  - You control a single backend (monolith or small-scale).
+  - You need easy logout/revocation.
+  - You mostly serve web clients (cookies integrate well).
+
+- Use JWT when:
+  - You have multiple backends / microservices (stateless verification is a win).
+  - You need to authenticate APIs, mobile apps, or 3rd-party clients.
+  - You accept that revocation will be handled via short lifetimes + refresh tokens.
 
 ### 5. Where should you store JWTs on the client?
 - Best: HTTP-only Secure Cookies.  
