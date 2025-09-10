@@ -76,6 +76,8 @@ HMACSHA256(
 - JSON parsers are common in most programming languages because they map directly to objects. Conversely, XML doesn't have a natural document-to-object mapping. This makes it easier to work with JWT than SAML assertions.
 - Regarding usage, JWT is used at the Internet scale. This highlights the ease of client-side processing of the JSON Web token on multiple platforms, especially mobile.
 
+---
+
 ## 🔹 What is the difference between validating and verifying a JWT?
 - Validation ensures the token is well-formed and contains enforceable claims. JWT validation generally refers to checking the structure, format, and content of the JWT:
 Structure: Ensuring the token has the standard three parts (header, payload, signature) separated by dots.
@@ -88,11 +90,15 @@ Issuer Verification: Checking if the iss claim matches an expected issuer.
 Audience Check: Ensuring the aud claim matches the expected audience.
 In practical terms:
 
+---
+
 ## 🔹 Explain Decoding and Encoding of JWT?
 
 - Encoding a JWT involves transforming the header and payload into a compact, URL-safe format. The header, which states the signing algorithm and token type, and the payload, which includes claims like subject, expiration, and issue time, are both converted to JSON then Base64URL encoded. These encoded parts are then concatenated with a dot, after which a signature is generated using the algorithm specified in the header with a secret or private key. This signature is also Base64URL encoded, resulting in the final JWT string that represents the token in a format suitable for transmission or storage.
 
 - Decoding a JWT reverses this process by converting the Base64URL encoded header and payload back into JSON, allowing anyone to read these parts without needing a key. However, "decoding" in this context often extends to include verification of the token's signature. This verification step involves re-signing the decoded header and payload with the same algorithm and key used initially, then comparing this new signature with the one included in the JWT. If they match, it confirms the token's integrity and authenticity, ensuring it hasn't been tampered with since issuance.
+
+---
 
 # Refresh Tokens Explained
 
@@ -126,58 +132,38 @@ In practical terms:
 - Often tracked server-side for revocation.  
 - Can be **rotating** (new one issued each time to prevent replay).
 
+---
 
 ## 🔹 Explain all types of claims in payload of JWT?
 - **Registered claims** — what they are and the common ones
-These are defined in RFC 7519; they provide interoperable, well-understood semantics:
-
-iss (Issuer) — string: who issued the token (URI or identifier).
-
-sub (Subject) — string: principal (usually user id) the token refers to.
-
-aud (Audience) — string or array of strings: intended recipients (one or more). Must be checked by the receiver.
-
-exp (Expiration Time) — NumericDate: time after which the token MUST NOT be accepted. (seconds since Unix epoch).
-
-nbf (Not Before) — NumericDate: token must not be accepted before this time.
-
-iat (Issued At) — NumericDate: time when the token was issued.
-
-jti (JWT ID) — string: unique id for the token (useful for revocation/blacklist).
-
-Notes:
-
-NumericDate is in seconds since epoch (so in JavaScript divide Date.now() by 1000).
-
-aud may be a single string or an array of strings.
-
-Registered claims are recommended for interoperability — e.g., always check exp and (if present) nbf.
+    These are defined in RFC 7519; they provide interoperable, well-understood semantics:
+    - iss (Issuer) — string: who issued the token (URI or identifier).
+    - sub (Subject) — string: principal (usually user id) the token refers to.
+    - aud (Audience) — string or array of strings: intended recipients (one or more). Must be checked by the receiver.
+    - exp (Expiration Time) — NumericDate: time after which the token MUST NOT be accepted. (seconds since Unix epoch).
+    - nbf (Not Before) — NumericDate: token must not be accepted before this time.
+    - iat (Issued At) — NumericDate: time when the token was issued.
+    - jti (JWT ID) — string: unique id for the token (useful for revocation/blacklist).
+    Notes:
+    - NumericDate is in seconds since epoch (so in JavaScript divide Date.now() by 1000).
+    - aud may be a single string or an array of strings.
+    - Registered claims are recommended for interoperability — e.g., always check exp and (if present) nbf.
 
 - **Public claims** — what they mean and how to avoid collisions
-
-Public claims are names you choose that are intended to be commonly known and used across systems (for example: name, email, scope, role).
-
-Collision avoidance:
-
-Register the claim name in the IANA JSON Web Token Claims registry (so others know the meaning), or
-
-Use a URI as the claim name to create a collision-resistant namespace, e.g.
-"https://acme.example.com/claims/role": "admin".
-(That URI need not be dereferenceable; it’s just a namespace.)
-
-“Public” here does not mean the value is publicly visible — a JWT payload is base64url-encoded but not encrypted. If the data is sensitive, encrypt (JWE) or avoid putting it in the token.
+  - Public claims are names you choose that are intended to be commonly known and used across systems (for example: name, email, scope, role).
+    Collision avoidance:
+    - Register the claim name in the IANA JSON Web Token Claims registry (so others know the meaning), or
+    - Use a URI as the claim name to create a collision-resistant namespace, e.g. "https://acme.example.com/claims/role": "admin".(That URI need not be dereferenceable; it’s just a namespace.)
+  - “Public” here does not mean the value is publicly visible — a JWT payload is base64url-encoded but not encrypted. If the data is sensitive, encrypt (JWE) or avoid putting it in the token.
 
 - **Private claims** — when and how to use
+    - Private claims are custom fields agreed on by specific parties (client + server). Example: company_id, account_tier.
+    - Because they’re not registered, name collisions can happen if two parties independently choose the same key for different meanings. Use namespacing (URI or company prefix) to reduce risk.
+    - Private claims are fine for internal metadata, but:
+    - avoid putting secret PII in plain JWTs unless the token is encrypted (JWE).
+    - prefer storing large or frequently-changing data on the server and keep the JWT small (only an identifier).
+---
 
-Private claims are custom fields agreed on by specific parties (client + server). Example: company_id, account_tier.
-
-Because they’re not registered, name collisions can happen if two parties independently choose the same key for different meanings. Use namespacing (URI or company prefix) to reduce risk.
-
-Private claims are fine for internal metadata, but:
-
-avoid putting secret PII in plain JWTs unless the token is encrypted (JWE).
-
-prefer storing large or frequently-changing data on the server and keep the JWT small (only an identifier).
 ## 🔹 Advantages & Disadvantages
 
 **Advantages**
@@ -224,13 +210,19 @@ function authenticateToken(req, res, next) {
 - JWT (JSON Web Token) is a compact, self-contained token for secure info transfer.  
 - Commonly used for authentication and authorization.
 
+---
+
 ### 2. What are the parts of a JWT?
 - **Header** (algorithm, type)  
 - **Payload** (claims: userId, role, exp)  
 - **Signature** (verifies integrity)  
 
+---
+
 ### 3. How is a JWT signature generated and verified?
 - Signature = `HMACSHA256(base64urlEncode(header) + "." + base64urlEncode(payload), secret)`
+
+---
 
 ### 4. What is the difference between JWT and session-based authentication?
 - How session-based authentication works
@@ -268,6 +260,8 @@ function authenticateToken(req, res, next) {
   - You have multiple backends / microservices (stateless verification is a win).
   - You need to authenticate APIs, mobile apps, or 3rd-party clients.
   - You accept that revocation will be handled via short lifetimes + refresh tokens.
+
+---
 
 ### 5. Where should you store JWTs on the client?
 - Best: HTTP-only Secure Cookies.  
